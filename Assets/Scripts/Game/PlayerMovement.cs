@@ -18,9 +18,12 @@ public class PlayerMovement : MonoBehaviour
     const float GRAVITY = -9.81f;
 
     [Header("Movement")]
-    [SerializeField] Animator anim;
-    [SerializeField] float moveSpeed;
-    [SerializeField] float jumpHeight;
+    [SerializeField] Animator bodyAnim;             // 플레이어 몸체 애니메이션.
+    [SerializeField] Animator weaponAnim;           // 무기 애니메이션.
+    [SerializeField] float walkSpeed;               // 걷는 속도.
+    [SerializeField] float runSpeed;                // 뛰는 속도.
+    [SerializeField] float jumpHeight;              // 점프 높이.
+
     [Range(1.0f, 4.0f)]
     [SerializeField] float gravityScale;
 
@@ -39,44 +42,44 @@ public class PlayerMovement : MonoBehaviour
     {
         get
         {
-            return anim.GetFloat("velocityY");
+            return bodyAnim.GetFloat("velocityY");
         }
         set
         {
-            anim.SetFloat("velocityY", value);
+            bodyAnim.SetFloat("velocityY", value);
         }
     }
     bool isGround
     {
         get
         {
-            return anim.GetBool("isGround");
+            return bodyAnim.GetBool("isGround");
         }
         set
         {
-            anim.SetBool("isGround", value);
+            bodyAnim.SetBool("isGround", value);
         }
     }
     float inputX
     {
         get
         {
-            return anim.GetFloat("inputX");
+            return bodyAnim.GetFloat("inputX");
         }
         set
         {
-            anim.SetFloat("inputX", value);
+            bodyAnim.SetFloat("inputX", value);
         }
     }
     float inputY
     {
         get
         {
-            return anim.GetFloat("inputY");
+            return bodyAnim.GetFloat("inputY");
         }
         set
         {
-            anim.SetFloat("inputY", value);
+            bodyAnim.SetFloat("inputY", value);
         }
     }
 
@@ -110,16 +113,25 @@ public class PlayerMovement : MonoBehaviour
         inputX = Input.GetAxis("Horizontal");       // 키보드 좌,우 (좌측,우측)
         inputY = Input.GetAxis("Vertical");         // 키보드 상,하 (정면,후면)
 
+        bool isMove = (inputX != 0) || (inputY != 0);                 // 이동키를 누르고 있을 경우.
+        bool isWalk = isMove && !Input.GetKey(KeyCode.LeftShift);     // 왼쪽 쉬프트 버튼을 누르지 않았을 경우 true.
+        bool isRun  = isMove && Input.GetKey(KeyCode.LeftShift);      // 왼쪽 쉬프트 버튼을 눌렀을 경우 true.
+
+        weaponAnim.SetBool("isWalk", isWalk);
+        weaponAnim.SetBool("isRun", isRun);
+
+        float movementSpeed = isWalk ? walkSpeed : runSpeed;
+
         // transform.방향 => 내 기준 방향 (로컬 좌표)
         Vector3 direction = (transform.right * inputX) + (transform.forward * inputY);
-        controller.Move(direction * moveSpeed * Time.deltaTime);
+        controller.Move(direction * movementSpeed * Time.deltaTime);
     }
     private void Jump()
     {
         if (isGround && Input.GetButtonDown("Jump"))
         {
             velocityY = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            anim.SetTrigger("onJump");
+            bodyAnim.SetTrigger("onJump");
         }
     }
     private void Gravity()
@@ -132,7 +144,7 @@ public class PlayerMovement : MonoBehaviour
         velocityY += gravity * Time.deltaTime;
         controller.Move(new Vector3(0f, velocityY, 0f) * Time.deltaTime);
 
-        anim.SetFloat("velocityY", velocityY);     // 애니메이터의 파리미터를 갱신.
+        bodyAnim.SetFloat("velocityY", velocityY);     // 애니메이터의 파리미터를 갱신.
     }
 
     private void OnDrawGizmos()
