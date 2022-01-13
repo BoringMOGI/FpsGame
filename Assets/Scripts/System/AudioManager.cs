@@ -95,7 +95,11 @@ public class AudioManager : ObjectPool<AudioEffect>
 
     public void PlayEffect(string str)
     {
+        PlayEffect(GetClip(AUDIO.Effect, str));
+    }
+    public void PlayEffect(AudioClip clip)
+    {
         AudioEffect effect = GetPool();
-        effect.Play(GetClip(AUDIO.Effect, str), effectVolumn * masterVolumn);
+        effect.Play(clip, effectVolumn * masterVolumn);
     }
 }
