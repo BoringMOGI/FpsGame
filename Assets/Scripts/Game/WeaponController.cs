@@ -11,7 +11,7 @@ public class WeaponController : MonoBehaviour
     [SerializeField] int maxBulletCount;        // 최대 장전 탄약 수.
 
     [Header("Bullet")]
-    [SerializeField] Transform bulletHole;      // 총구의 위치.
+    [SerializeField] Transform gunMuzzle;       // 총구의 위치.
     [SerializeField] Bullet bulletPrefab;       // 총알의 프리팹.
     [SerializeField] float bulletSpeed;         // 총알의 속도.
 
@@ -25,7 +25,10 @@ public class WeaponController : MonoBehaviour
     float nextFireTime = 0f;
 
     int bulletCount = 0;            // 장전 된 탄약 수.
-    int hasBulletCount = 5;        // 소지하고 있는 탄약 수.
+    int hasBulletCount = 5;         // 소지하고 있는 탄약 수.
+
+    Transform eye;
+    LineRenderer lineRenderer;
 
     public Transform AimCameraPivot => aimCameraPivot;
 
@@ -56,10 +59,23 @@ public class WeaponController : MonoBehaviour
     private void Start()
     {
         bulletCount = maxBulletCount;
+        lineRenderer = GetComponent<LineRenderer>();
     }
     private void Update()
     {
         UpdateUI();
+
+        Vector3 linePoint = gunMuzzle.position + (gunMuzzle.forward * 100f);
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, gunMuzzle.position);
+        lineRenderer.SetPosition(1, linePoint);
+
+        //Physics.Raycast()
+    }
+
+    public void Setup(Transform eye)
+    {
+        this.eye = eye;
     }
 
     public void Fire()
@@ -67,18 +83,33 @@ public class WeaponController : MonoBehaviour
         if (isReload)
             return;
 
-        // 연사 속도 제어, xkrdir wpdj.
+        // 연사 속도 제어
         if (bulletCount > 0 && nextFireTime <= Time.time)
         {
             nextFireTime = Time.time + fireRate;
             bulletCount--;
 
-            // 이펙트.
+            // 탄도 방향 계산.
 
+            // '시선'과 '총구'의 각도 차이를 보상해주기 위해
+            // Ray를 이용하여 총알의 목적지 계산.
+            Vector3 destination = eye.position + (eye.forward * 1000f);
+
+            RaycastHit hit;
+            if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f))
+                destination = hit.point;
+
+            // 총알이 나아갈 방향.
+            // Normalize() : 값의 정규화. 방향에서 크기를 제거해 정규화를 시킨다.
+            Vector3 direction = destination - gunMuzzle.position;
+            direction.Normalize();
+
+            // 총알 생성.
             Bullet newBullet = Instantiate(bulletPrefab);
-            newBullet.transform.position = bulletHole.position;
-            newBullet.Shoot(5f, bulletSpeed, bulletHole.forward);
+            newBullet.transform.position = gunMuzzle.position;
+            newBullet.Shoot(5f, bulletSpeed, direction);
 
+            // 애니메이션, 효과음 제어.
             anim.SetTrigger("onFire");
             AudioManager.Instance.PlayEffect(fireSE);
         }        
@@ -129,4 +160,5 @@ public class WeaponController : MonoBehaviour
 
         ui.SetBulletCount(bulletCount, hasBulletCount);
     }
+
 }
