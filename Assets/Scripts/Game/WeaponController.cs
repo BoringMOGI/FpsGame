@@ -4,11 +4,21 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
+    enum FIRE_TYPE
+    {
+        Single,     // 단발.
+        // Burst,      // 점사.
+        Auto,       // 연발.
+
+        Count,      // 개수.
+    }
+
     [SerializeField] Animator anim;
 
     [Header("Gun")]
     [SerializeField] float fireRate;            // 연사 속도.
     [SerializeField] int maxBulletCount;        // 최대 장전 탄약 수.
+    [SerializeField] Vector2 recoil;            // 총기 반동.
 
     [Header("Bullet")]
     [SerializeField] Transform gunMuzzle;       // 총구의 위치.
@@ -22,11 +32,16 @@ public class WeaponController : MonoBehaviour
     [Header("Positoin")]
     [SerializeField] Transform aimCameraPivot;  // 조준 카메라 중심점.
 
+    [Header("Grenade")]
+    [SerializeField] Grenade grenadePrefab;
+    [SerializeField] Transform grenadePivot;
+
     float nextFireTime = 0f;
 
     int bulletCount = 0;            // 장전 된 탄약 수.
     int hasBulletCount = 5;         // 소지하고 있는 탄약 수.
 
+    FIRE_TYPE fireType;
     Transform eye;
     LineRenderer lineRenderer;
 
@@ -55,22 +70,22 @@ public class WeaponController : MonoBehaviour
         }
     }
 
+    bool isThrowing;        // 폭탄을 던지는 중인가?
+
+    // 애니메이션을 재생하고 있는가? (= 다른 동작을 하지 못하게 해야 한다.)
+    bool IsAnimating => isReload || isThrowing;
+
 
     private void Start()
     {
+        fireType = FIRE_TYPE.Single;
+
         bulletCount = maxBulletCount;
         lineRenderer = GetComponent<LineRenderer>();
     }
     private void Update()
     {
         UpdateUI();
-
-        Vector3 linePoint = gunMuzzle.position + (gunMuzzle.forward * 100f);
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(0, gunMuzzle.position);
-        lineRenderer.SetPosition(1, linePoint);
-
-        //Physics.Raycast()
     }
 
     public void Setup(Transform eye)
@@ -78,45 +93,112 @@ public class WeaponController : MonoBehaviour
         this.eye = eye;
     }
 
-    public void Fire()
+    private Vector3 GetBulletDirection()
     {
-        if (isReload)
+        // '시선'과 '총구'의 각도 차이를 보상해주기 위해
+        // Ray를 이용하여 총알의 목적지 계산.
+        Vector3 destination = eye.position + (eye.forward * 1000f);
+
+        RaycastHit hit;
+        if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f))
+            destination = hit.point;
+
+        // 총알이 나아갈 방향.
+        // Normalize() : 값의 정규화. 방향에서 크기를 제거해 정규화를 시킨다.
+        Vector3 direction = destination - gunMuzzle.position;
+        direction.Normalize();
+
+        return direction;
+    }
+    private void Recoil()
+    {
+        // 조준 유무에 따른 최대 반동.
+        float maxRecoilX = recoil.x * (isAim ? 0.6f : 1.0f);
+        float maxRecoilY = recoil.y * (isAim ? 0.6f : 1.0f);
+
+        // 반동 전달.
+        float recoilX = Random.Range(-maxRecoilX, maxRecoilX);
+        float recoilY = Random.Range(0, maxRecoilY);
+        CameraLook.Instance.AddRecoil(new Vector2(recoilX, recoilY));
+    }
+
+
+
+    // 외부 조작.
+    public void Fire(bool isFirst)
+    {        
+        if (IsAnimating)
             return;
 
-        // 연사 속도 제어
-        if (bulletCount > 0 && nextFireTime <= Time.time)
+        // isFirst : 최초 입력 여부.
+        // 단발, 점사.
+        switch(fireType)
         {
-            nextFireTime = Time.time + fireRate;
+            case FIRE_TYPE.Single:
+
+                if (isFirst)
+                    Fire();
+
+                break;
+
+            case FIRE_TYPE.Auto:
+
+                if (nextFireTime <= Time.time)
+                {
+                    nextFireTime = Time.time + fireRate;
+                    Fire();
+                }
+
+                break;
+        }                    
+    }
+    private void Fire()
+    {
+        // 연사 속도 제어
+        if (bulletCount > 0)
+        {
             bulletCount--;
-
-            // 탄도 방향 계산.
-
-            // '시선'과 '총구'의 각도 차이를 보상해주기 위해
-            // Ray를 이용하여 총알의 목적지 계산.
-            Vector3 destination = eye.position + (eye.forward * 1000f);
-
-            RaycastHit hit;
-            if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f))
-                destination = hit.point;
-
-            // 총알이 나아갈 방향.
-            // Normalize() : 값의 정규화. 방향에서 크기를 제거해 정규화를 시킨다.
-            Vector3 direction = destination - gunMuzzle.position;
-            direction.Normalize();
 
             // 총알 생성.
             Bullet newBullet = Instantiate(bulletPrefab);
             newBullet.transform.position = gunMuzzle.position;
-            newBullet.Shoot(5f, bulletSpeed, direction);
+            newBullet.Shoot(5f, bulletSpeed, GetBulletDirection());
 
             // 애니메이션, 효과음 제어.
             anim.SetTrigger("onFire");
             AudioManager.Instance.PlayEffect(fireSE);
-        }        
+
+            // 총기 반동.
+            Recoil();
+        }
     }
+
+    Grenade grenade;
+    public void ThrowGrenade()
+    {
+        if (IsAnimating)
+            return;
+
+        // 폭탄 클론 생성.
+        grenade = Instantiate(grenadePrefab, grenadePivot);
+        grenade.transform.localPosition = Vector3.zero;
+        grenade.transform.localEulerAngles = Vector3.zero;
+
+        // 애니메이션 제어.
+        anim.SetTrigger("onGrenade");
+        isThrowing = true;
+    }
+    private void OnThrow()
+    {
+        // 실제로 던지는 이벤트.
+        grenade.transform.SetParent(null);
+        grenade.Throw(eye.forward, 20f);
+        grenade = null;
+    }
+
     public void Realod()
     {
-        if (isReload)
+        if (IsAnimating)
             return;
 
         // 리로딩 중이 아니며 장전 탄약이 최대 탄약보다 적을 경우.
@@ -128,8 +210,21 @@ public class WeaponController : MonoBehaviour
             AudioManager.Instance.PlayEffect(reloadSE);
         }
     }
+    public void ChangeFireType()
+    {
+        if (isThrowing)
+            return;
+
+        fireType += 1;
+        if (fireType >= FIRE_TYPE.Count)
+            fireType = 0;
+    }
+
     public void Aim(bool _isAim)
     {
+        if (IsAnimating)
+            return;
+
         // 새로 눌렸을 경우.
         if (isAim == false && _isAim)
             anim.SetTrigger("onAim");
@@ -137,6 +232,9 @@ public class WeaponController : MonoBehaviour
         isAim = _isAim;
     }
 
+
+
+    // 이벤트 함수.
     private void OnEndReload()
     {
         isReload = false;
@@ -152,6 +250,10 @@ public class WeaponController : MonoBehaviour
             bulletCount += need;                        // 필요한 수만큼 장전 수 올림.
             hasBulletCount -= need;                     // 필요한 수만큼 소지 탄약에서 제거.
         }
+    }
+    private void OnEndThrow()
+    {
+        isThrowing = false;
     }
 
     private void UpdateUI()

@@ -17,8 +17,8 @@ public class ObjectDisappear : MonoBehaviour
         yield return new WaitForSeconds(lifeTime);
 
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-        float maxTime = 1.0f;
-        float current = 1.0f;
+        //float maxTime = 1.0f;
+        //float current = 1.0f;
 
         /*
         while(meshRenderer != null)

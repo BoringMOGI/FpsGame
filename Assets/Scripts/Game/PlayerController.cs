@@ -11,16 +11,9 @@ public class PlayerController : MonoBehaviour
 
     float originFOV;
 
-    LineRenderer lineRenderer;
-
     private void Start()
     {
         originFOV = eye.fieldOfView;
-
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-        lineRenderer.material.color = Color.green;
-        lineRenderer.startWidth = 0.01f;
-        lineRenderer.endWidth = 0.01f;
 
         // 무기 초기값 전달.
         weapon.Setup(eye.transform);
@@ -30,19 +23,22 @@ public class PlayerController : MonoBehaviour
     {
         if(Input.GetMouseButton(0))
         {
-            weapon.Fire();
+            weapon.Fire(Input.GetMouseButtonDown(0));
         }
         if(Input.GetKeyDown(KeyCode.R))
         {
             weapon.Realod();
         }
+        if(Input.GetKeyDown(KeyCode.B))
+        {
+            weapon.ChangeFireType();
+        }
+        if(Input.GetKeyDown(KeyCode.G))
+        {
+            weapon.ThrowGrenade();
+        }
 
         Aim();
-
-        Vector3 linePoint = eye.transform.position + (eye.transform.forward * 50f);
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(0, eye.transform.position);
-        lineRenderer.SetPosition(1, linePoint);
     }
 
     private void Aim()

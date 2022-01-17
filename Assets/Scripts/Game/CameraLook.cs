@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraLook : MonoBehaviour
+public class CameraLook : Singleton<CameraLook>
 {
     [SerializeField] Transform playerBody;      // 플레이어의 몸체.
 
@@ -11,19 +11,18 @@ public class CameraLook : MonoBehaviour
 
     [Range(0.5f, 4.0f)]
     [SerializeField] float sensitivityY;        // 수직 감도.
-
-
     [SerializeField] float minX;
     [SerializeField] float maxX;
 
+    bool isLockMouse = false;       // 마우스 잠김 상태.
+    float xRotation = 0f;           // x축 회전 값.
 
-    bool isLockMouse = false;        // 마우스 잠김 상태.
-    float xRotation = 0f;            // x축 회전 값.
+    Vector2 recoil;                 // 총기 반동에 의한 값.
 
-        private void Awake()
-        {
-            OnLockMouse();
-        }
+    private void Start()
+    {
+        OnLockMouse();
+    }
     private void Update()
     {
         if (!isLockMouse)
@@ -37,12 +36,18 @@ public class CameraLook : MonoBehaviour
 
     private void OnMouseLook(Vector2 axis)
     {
+        // 수직, 수평 반동 더하기.
+        axis += recoil;         
+
         // 수평 회전.
         playerBody.Rotate(Vector3.up * axis.x);
 
         // 수진 회전.
         xRotation = Mathf.Clamp(xRotation - axis.y, minX, maxX);
+
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        recoil = Vector2.zero;
     }
 
     public void OnLockMouse()
@@ -58,5 +63,9 @@ public class CameraLook : MonoBehaviour
         Cursor.visible = true;
 
         isLockMouse = false;
+    }
+    public void AddRecoil(Vector2 recoil)
+    {
+        this.recoil = recoil;
     }
 }
