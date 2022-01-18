@@ -15,14 +15,22 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        GameObject bulletHole = Instantiate(bulletHolePrefab);
-
         // collision.transform.position은 충돌한 오브젝트의 기준 위치 (X)
         // collision.contacts[0].point는 충돌한 지점.
 
-        //bulletHole.transform.position = collision.transform.position;
+        GameObject bulletHole = Instantiate(bulletHolePrefab);                
+
         bulletHole.transform.position = transform.position;
         bulletHole.transform.rotation = Quaternion.LookRotation(collision.contacts[0].normal);
+        bulletHole.transform.SetParent(collision.transform);
+
+        // 상대가 총알과 상호작용하는 물체일 경우.
+        ITarget target = collision.gameObject.GetComponent<ITarget>();
+        if(target != null)
+        {
+            // 맞았다고 알려줌.
+            target.OnHit();
+        }
 
         Destroy(gameObject);
     }

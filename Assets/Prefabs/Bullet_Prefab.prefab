@@ -186,7 +186,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigid: {fileID: 54704279786675872}
-  bulletHolePrefab: {fileID: 3816760792798403064, guid: 080b10812b04fe24581a2c8abb86eee6, type: 3}
+  bulletHolePrefab: {fileID: 4401883101003035846, guid: df20646cc7818f244bd2e90a3c487518, type: 3}
 --- !u!1 &1231345400216816
 GameObject:
   m_ObjectHideFlags: 0

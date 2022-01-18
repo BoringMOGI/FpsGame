@@ -99,8 +99,14 @@ public class WeaponController : MonoBehaviour
         // Ray를 이용하여 총알의 목적지 계산.
         Vector3 destination = eye.position + (eye.forward * 1000f);
 
+        // 전체 레이어에서 ignore만 제외한다.
         RaycastHit hit;
-        if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f))
+        LayerMask eyeLayer = int.MaxValue;
+        LayerMask ignore = 1 << LayerMask.NameToLayer("NoEntry");
+
+        eyeLayer ^= ignore; // XOR연산.
+
+        if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f, eyeLayer))
             destination = hit.point;
 
         // 총알이 나아갈 방향.
@@ -173,16 +179,11 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    Grenade grenade;
+    
     public void ThrowGrenade()
     {
         if (IsAnimating)
             return;
-
-        // 폭탄 클론 생성.
-        grenade = Instantiate(grenadePrefab, grenadePivot);
-        grenade.transform.localPosition = Vector3.zero;
-        grenade.transform.localEulerAngles = Vector3.zero;
 
         // 애니메이션 제어.
         anim.SetTrigger("onGrenade");
@@ -191,9 +192,13 @@ public class WeaponController : MonoBehaviour
     private void OnThrow()
     {
         // 실제로 던지는 이벤트.
-        grenade.transform.SetParent(null);
+        // 폭탄 클론 생성.
+        Grenade grenade = Instantiate(grenadePrefab);
+        grenade.transform.position = grenadePivot.position;
+        grenade.transform.rotation = grenadePivot.rotation;
+
+        grenade.Setup();
         grenade.Throw(eye.forward, 20f);
-        grenade = null;
     }
 
     public void Realod()
