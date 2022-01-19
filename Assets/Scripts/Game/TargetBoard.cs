@@ -15,24 +15,32 @@ public class TargetBoard : MonoBehaviour, ITarget
     const string KEY_HIT = "Board_Hit";
     const string KEY_STAND = "Board_Stand";
 
-    void Start()
+    float countdown = 0;
+
+    // 초기화 함수.
+    public void Setup(float countdown)
     {
+        this.countdown = countdown;
         anim.Play(KEY_STAND);
+    }
+
+    void Update()
+    {
+        countdown -= Time.deltaTime;
+        if(countdown <= 0.0f)
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void OnHit()
     {
         anim.Play(KEY_HIT);
         collider.enabled = false;
-
-        Invoke("OnStand", 3.0f);
     }
 
-    private void OnStand()
+    public void OnEndHit()
     {
-        anim.Play(KEY_STAND);
-        collider.enabled = true;
+        Destroy(gameObject);
     }
-
-
 }

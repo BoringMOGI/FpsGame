@@ -107,7 +107,9 @@ public class WeaponController : MonoBehaviour
         eyeLayer ^= ignore; // XOR연산.
 
         if (Physics.Raycast(eye.position, eye.forward, out hit, 1000f, eyeLayer))
+        {
             destination = hit.point;
+        }
 
         // 총알이 나아갈 방향.
         // Normalize() : 값의 정규화. 방향에서 크기를 제거해 정규화를 시킨다.
@@ -267,5 +269,4 @@ public class WeaponController : MonoBehaviour
 
         ui.SetBulletCount(bulletCount, hasBulletCount);
     }
-
 }
