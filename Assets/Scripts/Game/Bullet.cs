@@ -15,8 +15,6 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Bullet Hit : " + collision.gameObject.name);
-
         // collision.transform.position은 충돌한 오브젝트의 기준 위치 (X)
         // collision.contacts[0].point는 충돌한 지점.
 

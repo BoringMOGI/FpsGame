@@ -19,6 +19,10 @@ public class CameraLook : Singleton<CameraLook>
 
     Vector2 recoil;                 // 총기 반동에 의한 값.
 
+    // 마우스가 잠기고 풀릴때 호출되는 이벤트 함수.
+    public delegate void MouseLockEvent(bool isLock);
+    public event MouseLockEvent OnMouseLock;
+
     private void Start()
     {
         OnLockMouse();
@@ -56,6 +60,7 @@ public class CameraLook : Singleton<CameraLook>
         Cursor.visible = false;
 
         isLockMouse = true;
+        OnMouseLock?.Invoke(true);
     }
     public void OnUnlockMouse()
     {
@@ -63,6 +68,7 @@ public class CameraLook : Singleton<CameraLook>
         Cursor.visible = true;
 
         isLockMouse = false;
+        OnMouseLock?.Invoke(false);
     }
     public void AddRecoil(Vector2 recoil)
     {

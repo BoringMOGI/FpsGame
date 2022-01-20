@@ -10,17 +10,25 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform originEyePivot;
 
     float originFOV;
+    bool isLockControl;     // 컨트롤을 막는다.
+
 
     private void Start()
     {
         originFOV = eye.fieldOfView;
+        isLockControl = false;
 
         // 무기 초기값 전달.
         weapon.Setup(eye.transform);
+
+        CameraLook.Instance.OnMouseLock += OnSwitchLock;
     }
 
     void Update()
     {
+        if (isLockControl)
+            return;
+
         if(Input.GetMouseButton(0))
         {
             weapon.Fire(Input.GetMouseButtonDown(0));
@@ -39,6 +47,11 @@ public class PlayerController : MonoBehaviour
         }
 
         Aim();
+    }
+
+    private void OnSwitchLock(bool isLock)
+    {
+        isLockControl = !isLock;
     }
 
     private void Aim()
