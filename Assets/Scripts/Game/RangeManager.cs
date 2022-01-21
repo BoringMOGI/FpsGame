@@ -3,8 +3,47 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class BoardManager : MonoBehaviour
+public class RangeManager : MonoBehaviour
 {
+    [System.Serializable]
+    public class RangeInfo
+    {
+        // 정보의 종류
+        public enum INFO_TYPE
+        {
+            Difficult,
+            Movement,
+            Armor,
+            Ammo,
+        }
+        public enum DIFFICULT
+        {
+            Easy,
+            Normal,
+            Hard,
+            KILL_50,
+            KILL_100,
+        }
+        public enum BOT_MOVEMENT
+        {
+            Move,
+            Stand,
+        }
+
+        public DIFFICULT difficulty;        // 난이도.
+        public BOT_MOVEMENT botMovement;    // 봇 움직임.
+        public bool isBotArmor;             // 봇 아머 착용.
+        public bool isInfinityAmmo;         // 무한 탄약.
+
+        public RangeInfo()
+        {
+            difficulty = DIFFICULT.Normal;
+            botMovement = BOT_MOVEMENT.Stand;
+            isInfinityAmmo = false;
+            isBotArmor = false;
+        }
+    }
+
     [SerializeField] TargetBoard prefab;
     [SerializeField] TMP_Text scoreText;            // 점수 텍스트.
     [SerializeField] TMP_Text remainingText;        // 남은 수 테스트.
@@ -12,8 +51,12 @@ public class BoardManager : MonoBehaviour
     [Header("Variable")]
     [SerializeField] float radiusX;
     [SerializeField] float radiusZ;
-    [SerializeField] float createTime;      // 타겟의 생성 주기.
-    [SerializeField] int maxTargetCount;    // 최대 생성 개수.
+    [SerializeField] float createTime;              // 타겟의 생성 주기.
+    [SerializeField] int maxTargetCount;            // 최대 생성 개수.
+
+    [Header("Detail")]
+    [SerializeField] RangeSimpleUI rangeSimpleUI;   // 사격장 정보창.
+    [SerializeField] RangeDetailUI rangeDetailUI;   // 사격장 제어창.
 
     bool isStart = false;
 
@@ -24,9 +67,15 @@ public class BoardManager : MonoBehaviour
     int remainingCount => maxTargetCount - createCount;     // 남은 개수.
 
     CallbackEvent onCallback;           // 콜백 이벤트.
+    RangeInfo rangeInfo;
 
     private void Start()
     {
+        rangeInfo = new RangeInfo();                    // 사격장 데이터 객체 생성.
+
+        rangeSimpleUI.Setup(rangeInfo);                 // 사격장 정보창 셋업.
+        rangeDetailUI.Setup(rangeInfo, OnChangeInfo);   // 사격장 제어창 셋업.
+
         UpdateScoreUI();
     }
     private void Update()
@@ -63,6 +112,27 @@ public class BoardManager : MonoBehaviour
         UpdateScoreUI();
     }
 
+    // 사격장 정보 변경.
+    private void OnChangeInfo(RangeInfo.INFO_TYPE infoType, int index)
+    {
+        switch(infoType)
+        {
+            case RangeInfo.INFO_TYPE.Difficult:
+                rangeInfo.difficulty = (RangeInfo.DIFFICULT)index;
+                break;
+            case RangeInfo.INFO_TYPE.Movement:
+                rangeInfo.botMovement = (RangeInfo.BOT_MOVEMENT)index;
+                break;
+            case RangeInfo.INFO_TYPE.Armor:
+                rangeInfo.isBotArmor = (index == 0);
+                break;
+            case RangeInfo.INFO_TYPE.Ammo:
+                rangeInfo.isInfinityAmmo = (index == 0);
+                break;
+        }
+    }
+
+    // 사격장 제어 ===============================================
     private void UpdateScoreUI()
     {
         scoreText.text = currentScore.ToString();
