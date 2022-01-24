@@ -3399,7 +3399,7 @@ RectTransform:
   - {fileID: 778616498}
   - {fileID: 657199069}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: -15, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -4088,6 +4088,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee7ebbdedde50d4459a1a6484165118d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreText: {fileID: 447690147}
+  remainingText: {fileID: 1027126874}
   simplePanel: {fileID: 512838648}
   detailPanel: {fileID: 792860903}
 --- !u!4 &962911493 stripped
@@ -4191,7 +4193,7 @@ RectTransform:
   - {fileID: 35578722}
   - {fileID: 853313821}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 25, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -5338,8 +5340,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 2021132507}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -6865,7 +6866,7 @@ GameObject:
   - component: {fileID: 2021132507}
   - component: {fileID: 2021132506}
   m_Layer: 0
-  m_Name: BoardManager
+  m_Name: RangeManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6884,12 +6885,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 7679865365904913353, guid: 83c6fc09e84da3f488c4e54da1674705, type: 3}
-  scoreText: {fileID: 447690147}
-  remainingText: {fileID: 1027126874}
   radiusX: 10
   radiusZ: 7
-  createTime: 1
-  maxTargetCount: 5
   rangeSimpleUI: {fileID: 512838653}
   rangeDetailUI: {fileID: 792860908}
 --- !u!4 &2021132507
@@ -6903,8 +6900,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1226537448}
-  m_RootOrder: 0
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2075773611 stripped
 MonoBehaviour:

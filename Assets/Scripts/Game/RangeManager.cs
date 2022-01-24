@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class RangeManager : MonoBehaviour
 {
@@ -45,14 +43,10 @@ public class RangeManager : MonoBehaviour
     }
 
     [SerializeField] TargetBoard prefab;
-    [SerializeField] TMP_Text scoreText;            // 점수 텍스트.
-    [SerializeField] TMP_Text remainingText;        // 남은 수 테스트.
 
-    [Header("Variable")]
+    [Header("Range")]
     [SerializeField] float radiusX;
     [SerializeField] float radiusZ;
-    [SerializeField] float createTime;              // 타겟의 생성 주기.
-    [SerializeField] int maxTargetCount;            // 최대 생성 개수.
 
     [Header("Detail")]
     [SerializeField] RangeSimpleUI rangeSimpleUI;   // 사격장 정보창.
@@ -60,14 +54,12 @@ public class RangeManager : MonoBehaviour
 
     bool isStart = false;
 
-    float timer = 0.0f;                 // 몇 초까지 흘렀는지 기록하는 변수.
-    int createCount = 0;                // 몇 개까지 만들었는지 기록하는 변수.
+    int createCount = 0;        // 생성 개수.
+    int maxCreateCount = 0;     // 최대 개수.
+    int currentScore = 0;       // 현재 점수. 
 
-    int currentScore = 0;               // 내가 얻은 점수.
-    int remainingCount => maxTargetCount - createCount;     // 남은 개수.
-
-    CallbackEvent onCallback;           // 콜백 이벤트.
-    RangeInfo rangeInfo;
+    CallbackEvent onCallback;   // 콜백 이벤트.
+    RangeInfo rangeInfo;        // 사격장 정보.
 
     private void Start()
     {
@@ -78,24 +70,8 @@ public class RangeManager : MonoBehaviour
 
         UpdateScoreUI();
     }
-    private void Update()
-    {
-        if (!isStart)
-            return;
 
-        timer += Time.deltaTime;        // timer의 값을 시간의 흐름에 따라 더한다.
-        if(timer >= createTime)         // timer의 값이 특정 시간이 되었으면
-        {
-            CreateBoard();              // 타겟을 랜덤한 위치에 생성.
-            UpdateScoreUI();            // 스코어 UI 업데이트.
-            timer = 0.0f;               // timer값을 초기화.
-            
-            if(createCount >= maxTargetCount)
-            {
-                OnEndGame();
-            }
-        }
-    }
+
 
     public void OnStartGame(CallbackEvent onCallback)
     {
@@ -104,13 +80,41 @@ public class RangeManager : MonoBehaviour
 
         this.onCallback = onCallback;
         isStart = true;
+        
+        StartCoroutine(RangeProcess(10, 0.5f));        
+    }
+    private IEnumerator RangeProcess(int maxCreateCount, float showRate)
+    {
+        float timer = 0.0f;                 // 몇 초 흘렀는지?
 
+        // 초기 값 생성.
         currentScore = 0;
         createCount = 0;
-        timer = 0.0f;
+        this.maxCreateCount = maxCreateCount;
 
+        // UI 갱신.
         UpdateScoreUI();
+
+        while(createCount < maxCreateCount)     // 적을 다 생성했으면 종료.
+        {
+            timer += Time.deltaTime;            // 시간 값을 더해서,
+            if(timer >= showRate)               // 일정 시간이 흐른 뒤 적을 생성.
+            {
+                timer = 0.0f;
+
+                CreateBoard();
+                UpdateScoreUI();
+            }
+
+            yield return null;                  // 업데이트 함수가 호출이 끝나기를 기다린다.
+        }
+
+        yield return new WaitForSeconds(1f);
+        
+        OnEndGame();                        
     }
+
+    
 
     // 사격장 정보 변경.
     private void OnChangeInfo(RangeInfo.INFO_TYPE infoType, int index)
@@ -135,8 +139,7 @@ public class RangeManager : MonoBehaviour
     // 사격장 제어 ===============================================
     private void UpdateScoreUI()
     {
-        scoreText.text = currentScore.ToString();
-        remainingText.text = remainingCount.ToString();
+        RangeUI.Instance.UpdateUI(currentScore, maxCreateCount - createCount);
     }
     private void CreateBoard()
     {
