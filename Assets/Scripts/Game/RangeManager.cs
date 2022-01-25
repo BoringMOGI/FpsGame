@@ -42,7 +42,22 @@ public class RangeManager : MonoBehaviour
         }
     }
 
+    [System.Serializable]
+    public struct DifficultInfo
+    {
+        public RangeInfo.DIFFICULT difficult;   // 난이도 타입.
+        [Range(1, 30)] 
+        public int maxCreateCount;              // 생성 수.
+        [Range(0.1f, 2.0f)]
+        public float createRate;                // 생성 주기.
+        [Range(0.2f, 3.0f)]
+        public float showTime;                  // 등장 유지 시간.
+    }
+
     [SerializeField] TargetBoard prefab;
+
+    [Header("Difficult")]
+    [SerializeField] DifficultInfo[] difficultInfos;
 
     [Header("Range")]
     [SerializeField] float radiusX;
@@ -80,17 +95,21 @@ public class RangeManager : MonoBehaviour
 
         this.onCallback = onCallback;
         isStart = true;
-        
-        StartCoroutine(RangeProcess(10, 0.5f));        
+
+        StartCoroutine(RangeProcess());        
     }
-    private IEnumerator RangeProcess(int maxCreateCount, float showRate)
+    private IEnumerator RangeProcess()
     {
+        DifficultInfo info = GetCurrentDifficult();        // 현재 난이도 데이터.
+
         float timer = 0.0f;                 // 몇 초 흘렀는지?
 
         // 초기 값 생성.
         currentScore = 0;
         createCount = 0;
-        this.maxCreateCount = maxCreateCount;
+        maxCreateCount = info.maxCreateCount;
+
+        float createRate = info.createRate;
 
         // UI 갱신.
         UpdateScoreUI();
@@ -98,11 +117,11 @@ public class RangeManager : MonoBehaviour
         while(createCount < maxCreateCount)     // 적을 다 생성했으면 종료.
         {
             timer += Time.deltaTime;            // 시간 값을 더해서,
-            if(timer >= showRate)               // 일정 시간이 흐른 뒤 적을 생성.
+            if(timer >= createRate)               // 일정 시간이 흐른 뒤 적을 생성.
             {
                 timer = 0.0f;
 
-                CreateBoard();
+                CreateBoard(info);
                 UpdateScoreUI();
             }
 
@@ -115,6 +134,18 @@ public class RangeManager : MonoBehaviour
     }
 
     
+    private DifficultInfo GetCurrentDifficult()
+    {
+        RangeInfo.DIFFICULT diff = rangeInfo.difficulty;        // 현재 난이도 가져옴.
+        for(int i = 0; i<difficultInfos.Length; i++)
+        {
+            if(difficultInfos[i].difficult == diff)
+                return difficultInfos[i];
+        }
+
+        return default(DifficultInfo);
+    }
+
 
     // 사격장 정보 변경.
     private void OnChangeInfo(RangeInfo.INFO_TYPE infoType, int index)
@@ -141,7 +172,7 @@ public class RangeManager : MonoBehaviour
     {
         RangeUI.Instance.UpdateUI(currentScore, maxCreateCount - createCount);
     }
-    private void CreateBoard()
+    private void CreateBoard(DifficultInfo info)
     {
         // 타겟의 위치 계산.
         Vector3 position = transform.position;
@@ -157,7 +188,7 @@ public class RangeManager : MonoBehaviour
         newTarget.OnHitEvent += OnHitTarget;
 
         // 타겟의 Setup함수 호출.
-        newTarget.Setup(1);
+        newTarget.Setup(info.showTime, rangeInfo.isBotArmor);
 
         // 생성 카운트 1 증가.
         createCount++;              
