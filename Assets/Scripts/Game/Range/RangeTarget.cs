@@ -2,27 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ITarget
-{
-    void OnHit();
-}
-
-public class TargetBoard : MonoBehaviour, ITarget
+public class RangeTarget : HitManager
 {
     [SerializeField] Animation anim;
     [SerializeField] new Collider collider;
     [SerializeField] GameObject armorObject;
+
+    const string KEY_FALL = "Board_Hit";           // 쓰러지는 애니메이션 키.
+    const string KEY_STAND = "Board_Stand";         // 일어나는 애니메이션 키.
 
     // 델리게이트 : 함수를 담을 수 있는 변수.
     // event형 델리게이트 : 외부에서 호출(x) 이벤트에 등록(O)
     public delegate void HitEvent();
     public event HitEvent OnHitEvent;               // 내가 맞았을 때 등록된 이벤트 호출.
 
-    const string KEY_FALL  = "Board_Hit";           // 쓰러지는 애니메이션 키.
-    const string KEY_STAND = "Board_Stand";         // 일어나는 애니메이션 키.
-
-
-    bool isAlive = true;        // 생존 여부.
+    bool isAlive = false;        // 생존 여부.
     float showTime = 0;         // 등장 시간.
     int armorDefence = 0;       // 방어도.
 
@@ -34,7 +28,7 @@ public class TargetBoard : MonoBehaviour, ITarget
         this.showTime = showTime;           // 등장 유지 시간. 
         armorDefence = isArmor ? 3 : 0;     // 방어구 착용 여부에 따라 3 또는 0의 값을 대입.
 
-        armorObject.SetActive(isArmor);     // isArmor의 값에 따라 방어구 오브젝트 활성화.
+        // armorObject.SetActive(isArmor);     // isArmor의 값에 따라 방어구 오브젝트 활성화.
         anim.Play(KEY_STAND);               // 일어나는 애니메이션 재생.
     }
 
@@ -44,7 +38,7 @@ public class TargetBoard : MonoBehaviour, ITarget
             return;
 
         showTime -= Time.deltaTime;
-        if(showTime <= 0.0f)
+        if (showTime <= 0.0f)
             OnFallDown();
     }
 
@@ -56,23 +50,31 @@ public class TargetBoard : MonoBehaviour, ITarget
         anim.Play(KEY_FALL);
     }
 
-    // 총알에 맞아서 쓰러진다.
-    public void OnHit()
+    public override void OnHit(BODY body)
     {
-        if (armorDefence > 0)       // 만약 방어도가 남아있다면.
+        base.OnHit(body);
+
+        Debug.Log("Hit : " + body);
+
+        switch(body)
         {
-            armorDefence -= 1;      // 방어도 1 감소.
+            case BODY.Head:
+                break;
+
+            case BODY.Leg:
+                break;
+
+            case BODY.Arm:
+                break;
+
+            case BODY.Body:
+                break;
         }
-        else                        // 방어도가 없다면,
-        {
-            OnHitEvent?.Invoke();   // 점수 올리기.
-            OnFallDown();
-        }
+
+        OnFallDown();
     }
     public void OnEndHit()
     {
         Destroy(gameObject);
     }
-    
-
 }

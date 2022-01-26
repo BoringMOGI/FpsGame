@@ -54,7 +54,7 @@ public class RangeManager : MonoBehaviour
         public float showTime;                  // 등장 유지 시간.
     }
 
-    [SerializeField] TargetBoard prefab;
+    [SerializeField] RangeTarget prefab;
 
     [Header("Difficult")]
     [SerializeField] DifficultInfo[] difficultInfos;
@@ -121,7 +121,7 @@ public class RangeManager : MonoBehaviour
             {
                 timer = 0.0f;
 
-                CreateBoard(info);
+                CreateTarget(info);
                 UpdateScoreUI();
             }
 
@@ -172,7 +172,7 @@ public class RangeManager : MonoBehaviour
     {
         RangeUI.Instance.UpdateUI(currentScore, maxCreateCount - createCount);
     }
-    private void CreateBoard(DifficultInfo info)
+    private void CreateTarget(DifficultInfo info)
     {
         // 타겟의 위치 계산.
         Vector3 position = transform.position;
@@ -180,7 +180,7 @@ public class RangeManager : MonoBehaviour
         position.z += Random.Range(-radiusZ, radiusZ);
 
         // 타겟 생성 및 위치,회전 값 대입.
-        TargetBoard newTarget = Instantiate(prefab);
+        RangeTarget newTarget = Instantiate(prefab);
         newTarget.transform.position = position;
         newTarget.transform.eulerAngles = Vector3.zero;
 
