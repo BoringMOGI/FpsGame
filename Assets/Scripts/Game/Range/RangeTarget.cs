@@ -16,9 +16,13 @@ public class RangeTarget : HitManager
     public delegate void HitEvent();
     public event HitEvent OnHitEvent;               // 내가 맞았을 때 등록된 이벤트 호출.
 
-    bool isAlive = false;        // 생존 여부.
+    bool isAlive = false;       // 생존 여부.
     float showTime = 0;         // 등장 시간.
-    int armorDefence = 0;       // 방어도.
+
+
+    int hp;         // 체력.
+    int armor;      // 몸 보호구.
+    int helmet;     // 머리 보호구.
 
     // 초기화 함수. (시작할 때 불러야 한다.)
     public void Setup(float showTime, bool isArmor)
@@ -26,9 +30,12 @@ public class RangeTarget : HitManager
         isAlive = true;
 
         this.showTime = showTime;           // 등장 유지 시간. 
-        armorDefence = isArmor ? 3 : 0;     // 방어구 착용 여부에 따라 3 또는 0의 값을 대입.
 
-        // armorObject.SetActive(isArmor);     // isArmor의 값에 따라 방어구 오브젝트 활성화.
+        hp = 100;
+        armor = isArmor ? 100 : 0;          // 방어구 착용 시 방탄복의 내구도를 100으로 증가.
+        helmet= isArmor ? 100 : 0;          // 방어구 착용 시 헬멧의 내구도를 100으로 증가.
+
+        // armorObject.SetActive(isArmor);  // isArmor의 값에 따라 방어구 오브젝트 활성화.
         anim.Play(KEY_STAND);               // 일어나는 애니메이션 재생.
     }
 
@@ -50,28 +57,50 @@ public class RangeTarget : HitManager
         anim.Play(KEY_FALL);
     }
 
-    public override void OnHit(BODY body)
+    public override void OnHit(BODY hitbox, int damage)
     {
-        base.OnHit(body);
+        base.OnHit(hitbox, damage);
 
-        Debug.Log("Hit : " + body);
+        bool isHelmet = helmet > 0;
+        bool isArmor = armor > 0;
 
-        switch(body)
+        switch(hitbox)
         {
             case BODY.Head:
-                break;
-
-            case BODY.Leg:
-                break;
-
-            case BODY.Arm:
+                if (isHelmet)
+                {
+                    damage = Mathf.RoundToInt(damage * 1.65f);
+                    helmet -= damage;
+                }
+                else
+                    damage = Mathf.RoundToInt(damage * 2.35f);
                 break;
 
             case BODY.Body:
+                if (isArmor)
+                {
+                    damage = Mathf.RoundToInt(damage * 0.7f);
+                    armor -= damage;
+                }
+                else
+                    damage = Mathf.RoundToInt(damage * 1.0f);
                 break;
+
+            case BODY.Leg:
+                damage = Mathf.RoundToInt(damage * 0.3f);
+                break;
+
+            case BODY.Arm:
+                damage = Mathf.RoundToInt(damage * 0.1f);
+                break;                            
         }
 
-        OnFallDown();
+        // 체력 저하.
+        if ((hp -= damage) <= 0)
+        {
+            OnHitEvent?.Invoke();
+            OnFallDown();
+        }
     }
     public void OnEndHit()
     {

@@ -17,7 +17,7 @@ public class HitManager : MonoBehaviour
         
     }
 
-    public virtual void OnHit(BODY body)
+    public virtual void OnHit(BODY body, int damage)
     {
 
     }

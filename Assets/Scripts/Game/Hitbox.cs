@@ -4,15 +4,19 @@ using UnityEngine;
 
 public interface ITarget
 {
-    void OnHit();
+    void OnHit(int damage);
 }
 public class Hitbox : MonoBehaviour, ITarget
 {
     [SerializeField] HitManager hitManager;
     [SerializeField] HitManager.BODY type;
 
-    public void OnHit()
+    void Start()
     {
-        hitManager.OnHit(type);
+        gameObject.layer = LayerMask.NameToLayer("Hitbox");
+    }
+    public void OnHit(int damage)
+    {
+        hitManager.OnHit(type, damage);
     }
 }

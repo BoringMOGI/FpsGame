@@ -110,11 +110,13 @@ public class WeaponController : MonoBehaviour
         {
             destination = hit.point;
         }
+       
 
         // 총알이 나아갈 방향.
         // Normalize() : 값의 정규화. 방향에서 크기를 제거해 정규화를 시킨다.
         Vector3 direction = destination - gunMuzzle.position;
         direction.Normalize();
+
 
         return direction;
     }
@@ -137,6 +139,8 @@ public class WeaponController : MonoBehaviour
     {        
         if (IsAnimating)
             return;
+
+      
 
         // isFirst : 최초 입력 여부.
         // 단발, 점사.
