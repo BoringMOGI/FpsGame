@@ -11,13 +11,15 @@ public class HitManager : MonoBehaviour
         Arm,        // ÆÈ
         Leg,        // ´Ù¸®
     }
-
-    private void Start()
+    public struct HitInfo
     {
-        
+        public BODY hitbox;
+        public int damage;
+        public Vector3 hitPoint;
+        public Vector3 hitRotation;
     }
 
-    public virtual void OnHit(BODY body, int damage)
+    public virtual void OnHit(HitInfo hitInfo)
     {
 
     }

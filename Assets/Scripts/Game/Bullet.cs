@@ -31,7 +31,12 @@ public class Bullet : MonoBehaviour
         if (target != null)
         {
             // 데미지 전달.
-            target.OnHit(50);
+            HitManager.HitInfo info = new HitManager.HitInfo();
+            info.damage = 50;
+            info.hitPoint = transform.position;
+            info.hitRotation = (transform.position - other.transform.position).normalized;
+
+            target.OnHit(info);
         }
 
         Destroy(gameObject);

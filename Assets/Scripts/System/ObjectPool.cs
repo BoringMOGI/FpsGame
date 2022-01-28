@@ -53,4 +53,8 @@ public class ObjectPool<PoolType> : MonoBehaviour
         pool.transform.SetParent(storageParent);    // 돌아온 풀링 오브젝트의 부모 변경.
         storage.Push(pool);                         // stack 대기열에 추가.
     }
+
+    internal interface IPool<T>
+    {
+    }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface ITarget
 {
-    void OnHit(int damage);
+    void OnHit(HitManager.HitInfo info);
 }
 public class Hitbox : MonoBehaviour, ITarget
 {
@@ -15,8 +15,9 @@ public class Hitbox : MonoBehaviour, ITarget
     {
         gameObject.layer = LayerMask.NameToLayer("Hitbox");
     }
-    public void OnHit(int damage)
+    public void OnHit(HitManager.HitInfo info)
     {
-        hitManager.OnHit(type, damage);
+        info.hitbox = type;
+        hitManager.OnHit(info);
     }
 }

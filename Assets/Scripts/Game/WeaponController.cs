@@ -16,14 +16,16 @@ public class WeaponController : MonoBehaviour
     [SerializeField] Animator anim;
 
     [Header("Gun")]
-    [SerializeField] float fireRate;            // 연사 속도.
-    [SerializeField] int maxBulletCount;        // 최대 장전 탄약 수.
-    [SerializeField] Vector2 recoil;            // 총기 반동.
+    [SerializeField] float fireRate;                // 연사 속도.
+    [SerializeField] int maxBulletCount;            // 최대 장전 탄약 수.
+    [SerializeField] Vector2 recoil;                // 총기 반동.
+    
 
     [Header("Bullet")]
-    [SerializeField] Transform gunMuzzle;       // 총구의 위치.
-    [SerializeField] Bullet bulletPrefab;       // 총알의 프리팹.
-    [SerializeField] float bulletSpeed;         // 총알의 속도.
+    [SerializeField] Transform gunMuzzle;           // 총구의 위치.
+    [SerializeField] Bullet bulletPrefab;           // 총알의 프리팹.
+    [SerializeField] ParticleSystem muzzleEffect;   // 총구 화염 이펙트.
+    [SerializeField] float bulletSpeed;             // 총알의 속도.
 
     [Header("Sound")]
     [SerializeField] AudioClip fireSE;          // 격발음.
@@ -179,6 +181,7 @@ public class WeaponController : MonoBehaviour
             // 애니메이션, 효과음 제어.
             anim.SetTrigger("onFire");
             AudioManager.Instance.PlayEffect(fireSE);
+            muzzleEffect.Play();
 
             // 총기 반동.
             Recoil();
